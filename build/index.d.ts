@@ -30,11 +30,11 @@ export default class Validator<State> {
   ): ((prevState: Readonly<State>) => State);
 
   validate(
-    stateUpdates?: { [key in keyof State]: string } | null,
+    stateUpdates?: { [key in keyof State]: any } | null,
     showErrors?: boolean
   ): Readonly<State>;
 
-  getErrors(state: State): { [key in keyof State]: string };
+  getErrors(state: State): { [key in keyof State]: any };
 
   isFormValid(state: State): boolean;
 
