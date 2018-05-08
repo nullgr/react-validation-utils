@@ -10,6 +10,8 @@ type FieldsDescription = {
   [key: string]: RuleData | RuleData[];
 };
 
+type updaterFunction<T > = (prevState: Readonly<T>) => T;
+
 export default class Validator<State> {
   constructor(fields: FieldsDescription, validationStorageName?: string);
 
@@ -25,18 +27,14 @@ export default class Validator<State> {
   addValidation(state: State, showErrorsOnStart?: boolean): Readonly<State>;
 
   validate(
-    stateUpdates: (prevState: Readonly<State>) => State,
+    stateUpdates?: Partial<State> | updaterFunction<State> | null,
     showErrors?: boolean
   ): ((prevState: Readonly<State>) => State);
 
-  validate(
-    stateUpdates?: { [key in keyof State]: any } | null,
-    showErrors?: boolean
-  ): Readonly<State>;
-
-  getErrors(state: State): { [key in keyof State]: any };
+  getErrors(state: State): { [key in keyof State]: string };
 
   isFormValid(state: State): boolean;
 
   isFieldValid(state: State, fieldName: string): boolean;
 }
+
