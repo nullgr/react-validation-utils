@@ -10,7 +10,7 @@ type FieldsDescription = {
   [key: string]: RuleData | RuleData[];
 };
 
-type updaterFunction<T > = (prevState: Readonly<T>) => T;
+type updaterFunction<T> = (prevState: Readonly<T>) => T;
 
 export default class Validator<State> {
   constructor(fields: FieldsDescription, validationStorageName?: string);
