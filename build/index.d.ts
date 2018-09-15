@@ -36,11 +36,5 @@ export default class Validator<State> {
   isFormValid(state: State): boolean;
 
   isFieldValid(state: State, fieldName: string): boolean;
-
-  updateRules(updaterParams: any): this;
-
-  fieldsToValidate(updaterParams: any): this;
-
-  showErrorsOnFields(updaterParams: any): this;
 }
 
