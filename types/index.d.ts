@@ -1,4 +1,4 @@
-type Rule = (val: string | boolean, state: object) => boolean;
+type Rule = (val: any, state: object) => boolean;
 
 type RuleData = {
   rule: Rule;
