@@ -35,7 +35,9 @@ var Validator = /** @class */ (function () {
             // Updating statuses
             partialValidationState[fieldName].statuses = validatedStatuses;
             // Updating errors
-            _this.errors[fieldName] = _this.findFirstFailedRuleMessage(_this.validationDescription[fieldName], validatedStatuses);
+            _this.errors[fieldName] = _this.isInitValidationStateSet
+                ? _this.findFirstFailedRuleMessage(_this.validationDescription[fieldName], validatedStatuses)
+                : '';
         });
     };
     Validator.prototype.findFirstFailedRuleMessage = function (fieldDescripton, statuses) {
@@ -63,9 +65,9 @@ var Validator = /** @class */ (function () {
                 statuses: []
             };
         });
+        this.updateValidationStatuses(this.validationState);
         // Initial validation has been launched, so - flag = true
         this.isInitValidationStateSet = true;
-        this.updateValidationStatuses(this.validationState);
         return state;
     };
     Validator.prototype.validate = function (state) {
@@ -83,10 +85,9 @@ var Validator = /** @class */ (function () {
         return { errors: this.errors };
     };
     Validator.prototype.isFormValid = function () {
-        var _this = this;
         var isFormValid = true;
-        Object.keys(this.errors).forEach(function (fieldName) {
-            if (_this.errors[fieldName] !== '')
+        Object.values(this.validationState).forEach(function (field) {
+            if (field.statuses.indexOf(false) !== -1)
                 isFormValid = false;
         });
         return isFormValid;

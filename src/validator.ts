@@ -54,10 +54,12 @@ class Validator<State> {
       partialValidationState[fieldName].statuses = validatedStatuses;
 
       // Updating errors
-      this.errors[fieldName] = this.findFirstFailedRuleMessage(
-        this.validationDescription[fieldName],
-        validatedStatuses
-      );
+      this.errors[fieldName] = this.isInitValidationStateSet
+        ? this.findFirstFailedRuleMessage(
+            this.validationDescription[fieldName],
+            validatedStatuses
+          )
+        : '';
     });
   }
 
@@ -98,10 +100,10 @@ class Validator<State> {
       };
     });
 
+    this.updateValidationStatuses(this.validationState);
+
     // Initial validation has been launched, so - flag = true
     this.isInitValidationStateSet = true;
-
-    this.updateValidationStatuses(this.validationState);
 
     return state;
   }
@@ -128,8 +130,8 @@ class Validator<State> {
   isFormValid(): boolean {
     let isFormValid = true;
 
-    Object.keys(this.errors).forEach(fieldName => {
-      if (this.errors[fieldName] !== '') isFormValid = false;
+    Object.values(this.validationState).forEach(field => {
+      if (field.statuses.indexOf(false) !== -1) isFormValid = false;
     });
 
     return isFormValid;
