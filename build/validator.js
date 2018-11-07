@@ -31,11 +31,12 @@ var Validator = /** @class */ (function () {
     Validator.prototype.updateValidationStatuses = function (partialValidationState) {
         var _this = this;
         Object.keys(partialValidationState).forEach(function (fieldName) {
-            var validatedStatuses = _this.validateField(partialValidationState[fieldName].value, _this.validationDescription[fieldName]);
+            var currentFieldState = partialValidationState[fieldName];
+            var validatedStatuses = _this.validateField(currentFieldState.value, _this.validationDescription[fieldName]);
             // Updating statuses
-            partialValidationState[fieldName].statuses = validatedStatuses;
+            currentFieldState.statuses = validatedStatuses;
             // Updating errors
-            _this.errors[fieldName] = _this.isInitValidationStateSet
+            _this.errors[fieldName] = currentFieldState.showError
                 ? _this.findFirstFailedRuleMessage(_this.validationDescription[fieldName], validatedStatuses)
                 : '';
         });

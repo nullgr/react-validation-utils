@@ -45,16 +45,18 @@ class Validator<State> {
     partialValidationState: FormValidationState
   ) {
     Object.keys(partialValidationState).forEach(fieldName => {
+      const currentFieldState = partialValidationState[fieldName];
+
       const validatedStatuses = this.validateField(
-        partialValidationState[fieldName].value,
+        currentFieldState.value,
         this.validationDescription[fieldName]
       );
 
       // Updating statuses
-      partialValidationState[fieldName].statuses = validatedStatuses;
+      currentFieldState.statuses = validatedStatuses;
 
       // Updating errors
-      this.errors[fieldName] = this.isInitValidationStateSet
+      this.errors[fieldName] = currentFieldState.showError
         ? this.findFirstFailedRuleMessage(
             this.validationDescription[fieldName],
             validatedStatuses
