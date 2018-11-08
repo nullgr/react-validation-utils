@@ -7,14 +7,17 @@ import { FieldsDescription, FormValidationState, ValidateReturn, ErrorMessages, 
  * @author Igor Ivanov <i.ivanov@nullgr.com>
  */
 declare class Validator<State> {
-    errors: ErrorMessages;
     validationDescription: FormattedFieldsDescription;
     validationState: FormValidationState;
     isInitValidationStateSet: boolean;
+    errors: ErrorMessages;
     constructor(fields: FieldsDescription);
     private updateValidationStatuses(partialValidationState);
+    private updateDependencyValidationStatuses(statuses, fieldDescripton);
     private findFirstFailedRuleMessage(fieldDescripton, statuses);
+    private getFieldDependencyStatuses(fieldState, fieldDescription);
     private validateField(fieldValue, fieldRules);
+    private validateFieldDependencies(fieldValue, fieldDependencyRules, actualValidationState);
     setInitialValues(state: State): State;
     validate(state: State): ValidateReturn;
     isFormValid(): boolean;

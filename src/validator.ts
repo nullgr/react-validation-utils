@@ -1,6 +1,8 @@
 import {
   RuleData,
+  DependencyRuleData,
   FieldsDescription,
+  FieldValidationState,
   FormValidationState,
   ValidateReturn,
   ErrorMessages,
@@ -18,10 +20,10 @@ import { findDifference } from './modules';
  */
 
 class Validator<State> {
-  errors: ErrorMessages;
   validationDescription: FormattedFieldsDescription;
   validationState: FormValidationState;
   isInitValidationStateSet: boolean;
+  errors: ErrorMessages;
 
   constructor(fields: FieldsDescription) {
     if (typeof fields !== 'object') {
@@ -41,47 +43,125 @@ class Validator<State> {
     this.isInitValidationStateSet = false;
   }
 
+  /* PRIVATE METHODS */
+
   private updateValidationStatuses(
     partialValidationState: FormValidationState
   ) {
     Object.keys(partialValidationState).forEach(fieldName => {
+      debugger;
       const currentFieldState = partialValidationState[fieldName];
+      const currentFieldDescription = this.validationDescription[fieldName];
+
+      console.log(currentFieldState, currentFieldDescription);
 
       const validatedStatuses = this.validateField(
         currentFieldState.value,
-        this.validationDescription[fieldName]
+        currentFieldDescription
+      );
+
+      const validatedDependencyStatuses = this.getFieldDependencyStatuses(
+        currentFieldState,
+        currentFieldDescription
       );
 
       // Updating statuses
-      currentFieldState.statuses = validatedStatuses;
+      currentFieldState.statuses = [
+        ...validatedStatuses,
+        ...validatedDependencyStatuses
+      ];
+      debugger;
+
+      if (validatedDependencyStatuses.length !== 0) {
+        this.updateDependencyValidationStatuses(
+          validatedDependencyStatuses,
+          currentFieldDescription
+        );
+      }
+
+      // console.log(validatedDependencyStatuses, currentFieldState.statuses);
 
       // Updating errors
       this.errors[fieldName] = currentFieldState.showError
         ? this.findFirstFailedRuleMessage(
-            this.validationDescription[fieldName],
+            currentFieldDescription,
             validatedStatuses
           )
         : '';
     });
   }
 
+  private updateDependencyValidationStatuses(
+    statuses: Array<void | boolean>,
+    fieldDescripton: RuleData[]
+  ) {
+    console.log(statuses, fieldDescripton);
+    const failedRuleIndex = statuses.indexOf(false);
+    debugger;
+    if (failedRuleIndex !== -1) {
+      const dependedFieldName =
+        fieldDescripton[0].dependencies[failedRuleIndex].fieldName;
+      let dependedField = {};
+
+      dependedField[dependedFieldName] = this.validationState[
+        fieldDescripton[0].dependencies[failedRuleIndex].fieldName
+      ];
+      console.log(dependedField);
+      this.updateValidationStatuses(dependedField);
+    }
+    debugger;
+  }
+
   private findFirstFailedRuleMessage(
     fieldDescripton: RuleData[],
     statuses: boolean[]
-  ) {
+  ): string {
     return statuses.indexOf(false) === -1
       ? ''
       : fieldDescripton[statuses.indexOf(false)].message;
   }
 
+  private getFieldDependencyStatuses(
+    fieldState: FieldValidationState,
+    fieldDescription: RuleData[]
+  ): Array<void | boolean> {
+    let dependencyStatuses: Array<void | boolean> = [];
+
+    // Check if field depends on another
+    fieldDescription.forEach((item: any) => {
+      debugger;
+
+      if (item.hasOwnProperty('dependencies')) {
+        dependencyStatuses = this.validateFieldDependencies(
+          fieldState.value,
+          item.dependencies,
+          this.validationState
+        );
+      }
+    });
+    debugger;
+
+    return dependencyStatuses;
+  }
+
   private validateField(
-    fieldValue: any,
+    fieldValue: string,
     fieldRules: RuleData[]
   ): Array<boolean> {
-    return fieldRules.map(item => {
-      return item.rule(fieldValue);
-    });
+    return fieldRules.map(item => item.rule(fieldValue));
   }
+
+  private validateFieldDependencies(
+    fieldValue: string,
+    fieldDependencyRules: DependencyRuleData[],
+    actualValidationState: FormValidationState
+  ): Array<boolean> {
+    return fieldDependencyRules.map(item =>
+      item.rule(fieldValue, actualValidationState[item.fieldName].value)
+    );
+  }
+
+  /* END OF PRIVATE METHODS */
 
   setInitialValues(state: State): State {
     Object.keys(this.validationDescription).forEach(fieldName => {
@@ -94,7 +174,7 @@ class Validator<State> {
       // Initial errors object formation
       this.errors[fieldName] = this.validationDescription[fieldName][0].message;
 
-      // Initial validation state formation
+      // Initial validation state object formation
       this.validationState[fieldName] = {
         value: state[fieldName],
         showError: false,
@@ -133,6 +213,7 @@ class Validator<State> {
     let isFormValid = true;
 
     Object.values(this.validationState).forEach(field => {
+      // console.log(field, field.statuses);
       if (field.statuses.indexOf(false) !== -1) isFormValid = false;
     });
 

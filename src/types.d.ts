@@ -4,6 +4,13 @@ export type RuleData = {
   rule: Rule;
   message: string;
   id?: string;
+  dependencies?: DependencyRuleData[];
+};
+
+export type DependencyRuleData = {
+  fieldName: string;
+  rule: Rule;
+  message: string;
 };
 
 /**

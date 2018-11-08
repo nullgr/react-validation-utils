@@ -28,29 +28,69 @@ var Validator = /** @class */ (function () {
         // if setInitialValues was called checkinng
         this.isInitValidationStateSet = false;
     }
+    /* PRIVATE METHODS */
     Validator.prototype.updateValidationStatuses = function (partialValidationState) {
         var _this = this;
         Object.keys(partialValidationState).forEach(function (fieldName) {
+            debugger;
             var currentFieldState = partialValidationState[fieldName];
-            var validatedStatuses = _this.validateField(currentFieldState.value, _this.validationDescription[fieldName]);
+            var currentFieldDescription = _this.validationDescription[fieldName];
+            console.log(currentFieldState, currentFieldDescription);
+            var validatedStatuses = _this.validateField(currentFieldState.value, currentFieldDescription);
+            var validatedDependencyStatuses = _this.getFieldDependencyStatuses(currentFieldState, currentFieldDescription);
             // Updating statuses
-            currentFieldState.statuses = validatedStatuses;
+            currentFieldState.statuses = validatedStatuses.concat(validatedDependencyStatuses);
+            debugger;
+            if (validatedDependencyStatuses.length !== 0) {
+                _this.updateDependencyValidationStatuses(validatedDependencyStatuses, currentFieldDescription);
+            }
+            // console.log(validatedDependencyStatuses, currentFieldState.statuses);
             // Updating errors
             _this.errors[fieldName] = currentFieldState.showError
-                ? _this.findFirstFailedRuleMessage(_this.validationDescription[fieldName], validatedStatuses)
+                ? _this.findFirstFailedRuleMessage(currentFieldDescription, validatedStatuses)
                 : '';
         });
+    };
+    Validator.prototype.updateDependencyValidationStatuses = function (statuses, fieldDescripton) {
+        console.log(statuses, fieldDescripton);
+        var failedRuleIndex = statuses.indexOf(false);
+        debugger;
+        if (failedRuleIndex !== -1) {
+            var dependedFieldName = fieldDescripton[0].dependencies[failedRuleIndex].fieldName;
+            var dependedField = {};
+            dependedField[dependedFieldName] = this.validationState[fieldDescripton[0].dependencies[failedRuleIndex].fieldName];
+            console.log(dependedField);
+            this.updateValidationStatuses(dependedField);
+        }
+        debugger;
     };
     Validator.prototype.findFirstFailedRuleMessage = function (fieldDescripton, statuses) {
         return statuses.indexOf(false) === -1
             ? ''
             : fieldDescripton[statuses.indexOf(false)].message;
     };
+    Validator.prototype.getFieldDependencyStatuses = function (fieldState, fieldDescription) {
+        var _this = this;
+        var dependencyStatuses = [];
+        // Check if field depends on another
+        fieldDescription.forEach(function (item) {
+            debugger;
+            if (item.hasOwnProperty('dependencies')) {
+                dependencyStatuses = _this.validateFieldDependencies(fieldState.value, item.dependencies, _this.validationState);
+            }
+        });
+        debugger;
+        return dependencyStatuses;
+    };
     Validator.prototype.validateField = function (fieldValue, fieldRules) {
-        return fieldRules.map(function (item) {
-            return item.rule(fieldValue);
+        return fieldRules.map(function (item) { return item.rule(fieldValue); });
+    };
+    Validator.prototype.validateFieldDependencies = function (fieldValue, fieldDependencyRules, actualValidationState) {
+        return fieldDependencyRules.map(function (item) {
+            return item.rule(fieldValue, actualValidationState[item.fieldName].value);
         });
     };
+    /* END OF PRIVATE METHODS */
     Validator.prototype.setInitialValues = function (state) {
         var _this = this;
         Object.keys(this.validationDescription).forEach(function (fieldName) {
@@ -59,7 +99,7 @@ var Validator = /** @class */ (function () {
             }
             // Initial errors object formation
             _this.errors[fieldName] = _this.validationDescription[fieldName][0].message;
-            // Initial validation state formation
+            // Initial validation state object formation
             _this.validationState[fieldName] = {
                 value: state[fieldName],
                 showError: false,
@@ -88,6 +128,7 @@ var Validator = /** @class */ (function () {
     Validator.prototype.isFormValid = function () {
         var isFormValid = true;
         Object.values(this.validationState).forEach(function (field) {
+            // console.log(field, field.statuses);
             if (field.statuses.indexOf(false) !== -1)
                 isFormValid = false;
         });
