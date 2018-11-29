@@ -53,8 +53,6 @@ class Validator<State> {
       const currentFieldState = partialValidationState[fieldName];
       const currentFieldDescription = this.validationDescription[fieldName];
 
-      console.log(currentFieldState, currentFieldDescription);
-
       const validatedStatuses = this.validateField(
         currentFieldState.value,
         currentFieldDescription
@@ -72,7 +70,7 @@ class Validator<State> {
       ];
       debugger;
 
-      if (validatedDependencyStatuses.length !== 0) {
+      if (validatedDependencyStatuses.indexOf(false) !== -1) {
         this.updateDependencyValidationStatuses(
           validatedDependencyStatuses,
           currentFieldDescription
@@ -89,6 +87,7 @@ class Validator<State> {
           )
         : '';
     });
+    console.log(this.validationState);
   }
 
   private updateDependencyValidationStatuses(
@@ -99,26 +98,18 @@ class Validator<State> {
     const failedRuleIndex = statuses.indexOf(false);
     debugger;
     if (failedRuleIndex !== -1) {
+      // TODO fix special case - [0] array element
       const dependedFieldName =
         fieldDescripton[0].dependencies[failedRuleIndex].fieldName;
-      let dependedField = {};
+      const dependedField = {};
 
       dependedField[dependedFieldName] = this.validationState[
-        fieldDescripton[0].dependencies[failedRuleIndex].fieldName
+        dependedFieldName
       ];
+
       console.log(dependedField);
-      this.updateValidationStatuses(dependedField);
     }
     debugger;
-  }
-
-  private findFirstFailedRuleMessage(
-    fieldDescripton: RuleData[],
-    statuses: boolean[]
-  ): string {
-    return statuses.indexOf(false) === -1
-      ? ''
-      : fieldDescripton[statuses.indexOf(false)].message;
   }
 
   private getFieldDependencyStatuses(
@@ -144,13 +135,6 @@ class Validator<State> {
     return dependencyStatuses;
   }
 
-  private validateField(
-    fieldValue: string,
-    fieldRules: RuleData[]
-  ): Array<boolean> {
-    return fieldRules.map(item => item.rule(fieldValue));
-  }
-
   private validateFieldDependencies(
     fieldValue: string,
     fieldDependencyRules: DependencyRuleData[],
@@ -159,6 +143,22 @@ class Validator<State> {
     return fieldDependencyRules.map(item =>
       item.rule(fieldValue, actualValidationState[item.fieldName].value)
     );
+  }
+
+  private validateField(
+    fieldValue: string,
+    fieldRules: RuleData[]
+  ): Array<boolean> {
+    return fieldRules.map(item => item.rule(fieldValue));
+  }
+
+  private findFirstFailedRuleMessage(
+    fieldDescripton: RuleData[],
+    statuses: boolean[]
+  ): string {
+    return statuses.indexOf(false) === -1
+      ? ''
+      : fieldDescripton[statuses.indexOf(false)].message;
   }
 
   /* END OF PRIVATE METHODS */

@@ -14,10 +14,10 @@ declare class Validator<State> {
     constructor(fields: FieldsDescription);
     private updateValidationStatuses(partialValidationState);
     private updateDependencyValidationStatuses(statuses, fieldDescripton);
-    private findFirstFailedRuleMessage(fieldDescripton, statuses);
     private getFieldDependencyStatuses(fieldState, fieldDescription);
-    private validateField(fieldValue, fieldRules);
     private validateFieldDependencies(fieldValue, fieldDependencyRules, actualValidationState);
+    private validateField(fieldValue, fieldRules);
+    private findFirstFailedRuleMessage(fieldDescripton, statuses);
     setInitialValues(state: State): State;
     validate(state: State): ValidateReturn;
     isFormValid(): boolean;
