@@ -22,12 +22,18 @@
   ],
   "author": "Oleksandr Chernenko (ca@nullgr.com, akazimirkas@gmail.com)",
   "license": "MIT",
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-flow"
+    ]
+  },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
+    "@babel/preset-flow": "^7.0.0",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.8.0",
-    "babel-preset-flow": "^6.23.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "2.9.0",
     "eslint-plugin-jest": "^20.0.3",
