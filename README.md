@@ -1,10 +1,8 @@
 # react-validation-utils
 [![npm version](https://badge.fury.io/js/react-validation-utils.svg)](https://badge.fury.io/js/react-validation-utils)
 
-## react-validation-utils 
-
-This library is no longer being maintained. It is replaced with 
-[instant-validation] (https://github.com/nullgr/instant-validation)
+## This library is no longer being maintained
+It is replaced with [instant-validation] (https://github.com/nullgr/instant-validation)
 
 Validate react form components, based on their state.
 
